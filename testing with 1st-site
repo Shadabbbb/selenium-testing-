@@ -1,0 +1,63 @@
+#--importing the relevent packages and modules 
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+import time
+import os
+
+#--Function for respective directories
+def create_directories():
+    resolutions = ['1920x1080', '1366x768', '1536x864']
+    devices = ['Desktop', 'Mobile']
+    browsers = ['Chrome', 'Firefox', 'Safari']
+    
+    for device in devices:
+        for resolution in resolutions:
+            for browser in browsers:
+                folder_path = f"{device}/{resolution}/{browser}"
+                os.makedirs(folder_path, exist_ok=True)
+
+#--Function to take screenshot
+def take_screenshot(driver, url, device, resolution, browser):
+    driver.get(url)
+    time.sleep(3)  # Add a delay to ensure page fully loads  
+    screenshot_path = f"{device}/{resolution}/{browser}/Screenshot-{time.strftime('%Y-%m-%d_%H-%M-%S')}.png"
+    driver.save_screenshot(screenshot_path)
+    print(f"Screenshot taken: {screenshot_path}")
+
+#-- Start testing the parameters
+def run_test(url, device, resolution, browser):
+    if browser == 'Chrome':
+        chrome_options = ChromeOptions()
+        chrome_options.add_argument(f"--window-size={resolution}")
+        driver = webdriver.Chrome(options=chrome_options)
+    elif browser == 'Firefox':
+        firefox_options = FirefoxOptions()
+        firefox_options.add_argument(f"--width={resolution.split('x')[0]}")
+        firefox_options.add_argument(f"--height={resolution.split('x')[1]}")
+        driver = webdriver.Firefox(options=firefox_options)
+    elif browser == 'Safari':
+        desired_capabilities = DesiredCapabilities.SAFARI.copy()
+        desired_capabilities['screen-resolution'] = resolution
+        driver = webdriver.Safari(desired_capabilities=desired_capabilities)
+    
+    take_screenshot(driver, url, device, resolution, browser)
+    driver.quit()
+
+#--Main function for declaring parameters
+def main():
+    url = "http://example.com"  # Replace with your website URL
+    create_directories()
+    
+    resolutions = ['1920x1080', '1366x768', '1536x864']
+    devices = ['Desktop', 'Mobile']
+    browsers = ['Chrome', 'Firefox', 'Safari']
+    
+    for device in devices:
+        for resolution in resolutions:
+            for browser in browsers:
+                run_test(url, device, resolution, browser)
+
+if __name__ == "__main__":
+    main()
